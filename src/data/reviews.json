@@ -1,3 +1,31 @@
 {
-  "reviews": []
+  "reviews": [
+    {
+      "id": "review-1",
+      "name": "Алексей М.",
+      "avatar": "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+      "socialLink": "https://instagram.com/alexey_m",
+      "rating": 5,
+      "text": "Потрясающие фотографии с события! Качество на высшем уровне, каждый кадр передает атмосферу гонок. Обязательно буду заказывать съемку у этого фотографа.",
+      "date": "2024-03-20"
+    },
+    {
+      "id": "review-2",
+      "name": "Мария К.",
+      "avatar": "https://images.pexels.com/photos/1499327/pexels-photo-1499327.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+      "socialLink": "",
+      "rating": 5,
+      "text": "Профессиональный подход к работе. Фотограф смог запечатлеть самые эмоциональные моменты соревнований. Рекомендую всем!",
+      "date": "2024-03-18"
+    },
+    {
+      "id": "review-3",
+      "name": "Дмитрий В.",
+      "avatar": "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
+      "socialLink": "https://t.me/dmitriy_v",
+      "rating": 4,
+      "text": "Отличная работа! Быстрая обработка, хорошее качество фотографий. Единственное пожелание - больше динамичных кадров.",
+      "date": "2024-03-15"
+    }
+  ]
 }

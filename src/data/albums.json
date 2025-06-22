@@ -1,3 +1,34 @@
 {
-  "albums": []
+  "albums": [
+    {
+      "id": "album-1750273359411",
+      "name": "Turbo Night 2025",
+      "date": "2025-06-14",
+      "previewImage": "/images/1750273324216-848484769-DSC08800.jpg",
+      "coverMedia": "/images/1750273327113-371177316-DSC08329.jpg",
+      "mediaType": "image",
+      "likes": 3,
+      "downloads": 1
+    },
+    {
+      "id": "album-1750586299389",
+      "name": "Turbo Night 2025",
+      "date": "2025-06-14",
+      "previewImage": "/images/1750586262685-223597695-DSC08800.jpg",
+      "coverMedia": "/images/1750586294208-659821746-DSC08983.jpg",
+      "mediaType": "image",
+      "likes": 0,
+      "downloads": 0
+    },
+    {
+      "id": "album-1750590462060",
+      "name": "Turbo Night 2025",
+      "date": "2025-06-14",
+      "previewImage": "",
+      "coverMedia": "",
+      "mediaType": "image",
+      "likes": 0,
+      "downloads": 0
+    }
+  ]
 }

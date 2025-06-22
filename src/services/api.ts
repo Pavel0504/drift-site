@@ -10,27 +10,33 @@ export interface ApiError {
 }
 
 export interface Album {
-  id: number;
-  title: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string;
+  name: string;
+  date: string;
+  previewImage: string;
+  coverMedia: string;
+  mediaType: 'image' | 'video';
+  likes: number;
+  downloads: number;
 }
 
 export interface Event {
-  id: number;
+  id: string;
   name: string;
   date: string;
   location: string;
   description: string;
+  isCompleted?: boolean;
 }
 
 export interface Review {
-  id: number;
+  id: string;
+  name: string;
+  avatar: string;
+  socialLink?: string;
   text: string;
   rating: number;
-  author: string;
-  createdAt: string;
+  date: string;
 }
 
 export interface Settings {
@@ -47,10 +53,11 @@ export interface Statistics {
 }
 
 export interface Wallpaper {
-  id: number;
+  id: string;
   url: string;
   title?: string;
   likes: number;
+  downloads: number;
   createdAt: string;
 }
 
@@ -60,127 +67,128 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-
-    const defaultOptions: RequestInit = {
+    const response = await fetch(url, {
       headers: { 'Content-Type': 'application/json' },
       ...options,
-    };
-
-    const response = await fetch(url, defaultOptions);
+    });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => null);
-      const message =
-        (errorBody && (errorBody.message as string)) ||
-        response.statusText ||
-        'Unknown error';
+      let message = response.statusText;
+      try {
+        const body = await response.json();
+        if (body?.error) message = body.error;
+        if (body?.message) message = body.message;
+      } catch { /* ignore parse errors */ }
       throw { status: response.status, message } as ApiError;
     }
 
     return (await response.json()) as T;
   }
 
-  // File upload with FormData
+  // File upload
   async uploadFile(file: File): Promise<{ url: string }> {
     const formData = new FormData();
     formData.append('file', file);
-
-    const response = await fetch(`${API_BASE_URL}/upload`, {
+    const res = await fetch(`${API_BASE_URL}/upload`, {
       method: 'POST',
       body: formData,
     });
-
-    if (!response.ok) {
-      throw new Error(`File upload failed: ${response.status}`);
-    }
-
-    return response.json();
+    if (!res.ok) throw new Error(`File upload failed: ${res.status}`);
+    return res.json();
   }
 
   // Multiple file upload
   async uploadMultipleFiles(files: File[]): Promise<{ urls: string[] }> {
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-
-    const response = await fetch(`${API_BASE_URL}/upload/multiple`, {
+    const res = await fetch(`${API_BASE_URL}/upload/multiple`, {
       method: 'POST',
       body: formData,
     });
-
-    if (!response.ok) {
-      throw new Error(`Multiple file upload failed: ${response.status}`);
-    }
-
-    return response.json();
+    if (!res.ok) throw new Error(`Multiple file upload failed: ${res.status}`);
+    return res.json();
   }
 
   // Albums
   async getAlbums(): Promise<Album[]> {
-    return this.request<Album[]>('/albums');
+    // API returns { albums: Album[] }
+    const data = await this.request<{ albums: Album[] }>('/albums');
+    return data.albums;
   }
 
-  async getAlbum(id: number): Promise<Album> {
-    return this.request<Album>(`/albums/${id}`);
+  async getAlbum(id: string): Promise<Album & { stages?: any[]; photos?: any[] }> {
+    return this.request<Album & { stages?: any[]; photos?: any[] }>(`/albums/${id}`);
   }
 
-  async createAlbum(albumData: Omit<Album, 'id' | 'createdAt' | 'updatedAt'>): Promise<Album> {
-    return this.request<Album>('/albums', {
+  async createAlbum(payload: {
+    name: string;
+    date: string;
+    previewImage: string;
+    coverMedia: string;
+    mediaType: 'image' | 'video';
+    stages?: any[];
+    photos?: any[];
+  }): Promise<{ success: boolean; id: string }> {
+    return this.request<{ success: boolean; id: string }>('/albums', {
       method: 'POST',
-      body: JSON.stringify(albumData),
+      body: JSON.stringify(payload),
     });
   }
 
   async updateAlbum(
-    id: number,
-    albumData: Partial<Omit<Album, 'id' | 'createdAt' | 'updatedAt'>>
-  ): Promise<Album> {
-    return this.request<Album>(`/albums/${id}`, {
+    id: string,
+    payload: Partial<Omit<Album, 'id'>> & { stages?: any[]; photos?: any[] }
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/albums/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(albumData),
+      body: JSON.stringify(payload),
     });
   }
 
-  async deleteAlbum(id: number): Promise<void> {
-    return this.request<void>(`/albums/${id}`, { method: 'DELETE' });
+  async deleteAlbum(id: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/albums/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   // Events
   async getEvents(): Promise<Event[]> {
-    return this.request<Event[]>('/events');
+    // API returns { events: Event[] }
+    const data = await this.request<{ events: Event[] }>('/events');
+    return data.events;
   }
 
-  async createEvent(eventData: Omit<Event, 'id'>): Promise<Event> {
-    return this.request<Event>('/events', {
+  async createEvent(payload: Omit<Event, 'id' | 'isCompleted'>): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/events', {
       method: 'POST',
-      body: JSON.stringify(eventData),
+      body: JSON.stringify(payload),
     });
   }
 
-  async updateEvent(
-    id: number,
-    eventData: Partial<Omit<Event, 'id'>>
-  ): Promise<Event> {
-    return this.request<Event>(`/events/${id}`, {
+  async updateEvent(id: string, payload: Partial<Omit<Event, 'id'>>): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/events/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(eventData),
+      body: JSON.stringify(payload),
     });
   }
 
-  async deleteEvent(id: number): Promise<void> {
-    return this.request<void>(`/events/${id}`, { method: 'DELETE' });
+  async deleteEvent(id: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/events/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   // Reviews
   async getReviews(): Promise<Review[]> {
-    return this.request<Review[]>('/reviews');
+    // API returns { reviews: Review[] }
+    const data = await this.request<{ reviews: Review[] }>('/reviews');
+    return data.reviews;
   }
 
-  async createReview(
-    reviewData: Omit<Review, 'id' | 'createdAt'>
-  ): Promise<Review> {
-    return this.request<Review>('/reviews', {
+  async createReview(payload: Omit<Review, 'id' | 'date'>): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/reviews', {
       method: 'POST',
-      body: JSON.stringify(reviewData),
+      body: JSON.stringify(payload),
     });
   }
 
@@ -189,12 +197,10 @@ class ApiService {
     return this.request<Settings>('/settings');
   }
 
-  async updateSettings(
-    settingsData: Partial<Settings>
-  ): Promise<Settings> {
-    return this.request<Settings>('/settings', {
+  async updateSettings(payload: Partial<Settings>): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/settings', {
       method: 'PUT',
-      body: JSON.stringify(settingsData),
+      body: JSON.stringify(payload),
     });
   }
 
@@ -203,61 +209,55 @@ class ApiService {
     return this.request<Statistics>('/statistics');
   }
 
-  async updateStatistics(
-    statisticsData: Partial<Statistics>
-  ): Promise<Statistics> {
-    return this.request<Statistics>('/statistics', {
+  async updateStatistics(payload: Partial<Statistics>): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/statistics', {
       method: 'PUT',
-      body: JSON.stringify(statisticsData),
+      body: JSON.stringify(payload),
     });
   }
 
   // Wallpapers
   async getWallpapers(): Promise<Wallpaper[]> {
-    return this.request<Wallpaper[]>('/wallpapers');
+    // API returns { wallpapers: Wallpaper[] }
+    const data = await this.request<{ wallpapers: Wallpaper[] }>('/wallpapers');
+    return data.wallpapers;
   }
 
   async createWallpapers(
-    wallpapers: Partial<Wallpaper>[]
-  ): Promise<Wallpaper[]> {
-    return this.request<Wallpaper[]>('/wallpapers', {
+    payload: Array<Partial<Omit<Wallpaper, 'id' | 'likes' | 'downloads' | 'createdAt'>>>
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/wallpapers', {
       method: 'POST',
-      body: JSON.stringify({ wallpapers }),
+      body: JSON.stringify({ wallpapers: payload }),
     });
   }
 
-  async deleteWallpaper(id: number): Promise<void> {
-    return this.request<void>(`/wallpapers/${id}`, { method: 'DELETE' });
+  async deleteWallpaper(id: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/wallpapers/${id}`, {
+      method: 'DELETE',
+    });
   }
 
-  async likeWallpaper(
-    id: number,
-    increment: boolean
-  ): Promise<Wallpaper> {
-    return this.request<Wallpaper>(`/wallpapers/${id}/like`, {
+  async likeWallpaper(id: string, increment: boolean): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/wallpapers/${id}/like`, {
       method: 'POST',
       body: JSON.stringify({ increment }),
     });
   }
 
-  async downloadWallpaper(id: number): Promise<{ url: string }> {
-    return this.request<{ url: string }>(`/wallpapers/${id}/download`, {
+  async downloadWallpaper(id: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/wallpapers/${id}/download`, {
       method: 'POST',
     });
   }
 
-  // Download functions
+  // Helpers for downloads that open in new tab
   downloadImage(filename: string): void {
     window.open(`${API_BASE_URL}/download/image/${filename}`, '_blank');
   }
 
-  downloadAlbum(albumId: number): void {
+  downloadAlbum(albumId: string): void {
     window.open(`${API_BASE_URL}/download/album/${albumId}`, '_blank');
-  }
-
-  // Delete file
-  async deleteFile(filename: string): Promise<void> {
-    return this.request<void>(`/files/${filename}`, { method: 'DELETE' });
   }
 }
 

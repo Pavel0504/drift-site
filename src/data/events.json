@@ -1,3 +1,36 @@
 {
-  "events": []
+  "events": [
+    {
+      "id": "drift-masters-2024",
+      "name": "Drift Masters Championshi",
+      "date": "2024-04-20",
+      "address": "Автодром 'Казань Ринг', Казань",
+      "organizerUrl": "https://driftmasters.ru",
+      "isCompleted": false
+    },
+    {
+      "id": "time-attack-moscow",
+      "name": "Time Attack Moscow",
+      "date": "2024-05-15",
+      "address": "Moscow Raceway, Москва",
+      "organizerUrl": "https://timeattack.moscow",
+      "isCompleted": false
+    },
+    {
+      "id": "stance-nation-spb",
+      "name": "Stance Nation SPB",
+      "date": "2024-06-01",
+      "address": "Экспофорум, Санкт-Петербург",
+      "organizerUrl": "",
+      "isCompleted": false
+    },
+    {
+      "id": "drag-racing-2024",
+      "name": "Drag Racing Championship",
+      "date": "2024-03-10",
+      "address": "Смоленское кольцо",
+      "organizerUrl": "https://dragracing.ru",
+      "isCompleted": true
+    }
+  ]
 }

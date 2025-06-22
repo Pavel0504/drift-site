@@ -1,7 +1,23 @@
 {
-  "totalLikes": 0,
-  "totalDownloads": 0,
-  "totalEvents": 0,
-  "totalAlbums": 0,
-  "albumStats": {}
+  "totalLikes": 2463,
+  "totalDownloads": 1836,
+  "totalEvents": 12,
+  "totalAlbums": 8,
+  "albumStats": {
+    "drift-championship-2024": {
+      "likes": 456,
+      "downloads": 234,
+      "photos": 89
+    },
+    "tuning-fest-2024": {
+      "likes": 389,
+      "downloads": 167,
+      "photos": 67
+    },
+    "street-racing-night": {
+      "likes": 567,
+      "downloads": 445,
+      "photos": 124
+    }
+  }
 }
