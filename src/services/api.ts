@@ -113,6 +113,7 @@ class ApiService {
   async getAlbums(): Promise<Album[]> {
     // API returns { albums: Album[] }
     const data = await this.request<{ albums: Album[] }>('/albums');
+    console.log('Полученные альбомы:', data.albums);
     return data.albums;
   }
 

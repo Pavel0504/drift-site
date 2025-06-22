@@ -29,6 +29,16 @@
       "mediaType": "image",
       "likes": 0,
       "downloads": 0
+    },
+    {
+      "id": "album-1750593491146",
+      "name": "Альбом созданный с фронт части",
+      "date": "2025-06-22",
+      "previewImage": "",
+      "coverMedia": "",
+      "mediaType": "image",
+      "likes": 0,
+      "downloads": 0
     }
   ]
 }
