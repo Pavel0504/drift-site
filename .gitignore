@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
-.env.production
 /server/task.mp4
 src/data/albums.json
 src/data/albums.json
