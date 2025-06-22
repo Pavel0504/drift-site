@@ -46,6 +46,14 @@ export interface Statistics {
   totalReviews: number;
 }
 
+export interface Wallpaper {
+  id: number;
+  url: string;
+  title?: string;
+  likes: number;
+  createdAt: string;
+}
+
 class ApiService {
   private async request<T>(
     endpoint: string,
@@ -107,61 +115,69 @@ class ApiService {
   }
 
   // Albums
-  getAlbums(): Promise<Album[]> {
+  async getAlbums(): Promise<Album[]> {
     return this.request<Album[]>('/albums');
   }
 
-  getAlbum(id: number): Promise<Album> {
+  async getAlbum(id: number): Promise<Album> {
     return this.request<Album>(`/albums/${id}`);
   }
 
-  createAlbum(albumData: Omit<Album, 'id' | 'createdAt' | 'updatedAt'>): Promise<Album> {
+  async createAlbum(albumData: Omit<Album, 'id' | 'createdAt' | 'updatedAt'>): Promise<Album> {
     return this.request<Album>('/albums', {
       method: 'POST',
       body: JSON.stringify(albumData),
     });
   }
 
-  updateAlbum(id: number, albumData: Partial<Omit<Album, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Album> {
+  async updateAlbum(
+    id: number,
+    albumData: Partial<Omit<Album, 'id' | 'createdAt' | 'updatedAt'>>
+  ): Promise<Album> {
     return this.request<Album>(`/albums/${id}`, {
       method: 'PUT',
       body: JSON.stringify(albumData),
     });
   }
 
-  deleteAlbum(id: number): Promise<void> {
+  async deleteAlbum(id: number): Promise<void> {
     return this.request<void>(`/albums/${id}`, { method: 'DELETE' });
   }
 
   // Events
-  getEvents(): Promise<Event[]> {
+  async getEvents(): Promise<Event[]> {
     return this.request<Event[]>('/events');
   }
 
-  createEvent(eventData: Omit<Event, 'id'>): Promise<Event> {
+  async createEvent(eventData: Omit<Event, 'id'>): Promise<Event> {
     return this.request<Event>('/events', {
       method: 'POST',
       body: JSON.stringify(eventData),
     });
   }
 
-  updateEvent(id: number, eventData: Partial<Omit<Event, 'id'>>): Promise<Event> {
+  async updateEvent(
+    id: number,
+    eventData: Partial<Omit<Event, 'id'>>
+  ): Promise<Event> {
     return this.request<Event>(`/events/${id}`, {
       method: 'PUT',
       body: JSON.stringify(eventData),
     });
   }
 
-  deleteEvent(id: number): Promise<void> {
+  async deleteEvent(id: number): Promise<void> {
     return this.request<void>(`/events/${id}`, { method: 'DELETE' });
   }
 
   // Reviews
-  getReviews(): Promise<Review[]> {
+  async getReviews(): Promise<Review[]> {
     return this.request<Review[]>('/reviews');
   }
 
-  createReview(reviewData: Omit<Review, 'id' | 'createdAt'>): Promise<Review> {
+  async createReview(
+    reviewData: Omit<Review, 'id' | 'createdAt'>
+  ): Promise<Review> {
     return this.request<Review>('/reviews', {
       method: 'POST',
       body: JSON.stringify(reviewData),
@@ -169,11 +185,13 @@ class ApiService {
   }
 
   // Settings
-  getSettings(): Promise<Settings> {
+  async getSettings(): Promise<Settings> {
     return this.request<Settings>('/settings');
   }
 
-  updateSettings(settingsData: Partial<Settings>): Promise<Settings> {
+  async updateSettings(
+    settingsData: Partial<Settings>
+  ): Promise<Settings> {
     return this.request<Settings>('/settings', {
       method: 'PUT',
       body: JSON.stringify(settingsData),
@@ -181,14 +199,50 @@ class ApiService {
   }
 
   // Statistics
-  getStatistics(): Promise<Statistics> {
+  async getStatistics(): Promise<Statistics> {
     return this.request<Statistics>('/statistics');
   }
 
-  updateStatistics(statisticsData: Partial<Statistics>): Promise<Statistics> {
+  async updateStatistics(
+    statisticsData: Partial<Statistics>
+  ): Promise<Statistics> {
     return this.request<Statistics>('/statistics', {
       method: 'PUT',
       body: JSON.stringify(statisticsData),
+    });
+  }
+
+  // Wallpapers
+  async getWallpapers(): Promise<Wallpaper[]> {
+    return this.request<Wallpaper[]>('/wallpapers');
+  }
+
+  async createWallpapers(
+    wallpapers: Partial<Wallpaper>[]
+  ): Promise<Wallpaper[]> {
+    return this.request<Wallpaper[]>('/wallpapers', {
+      method: 'POST',
+      body: JSON.stringify({ wallpapers }),
+    });
+  }
+
+  async deleteWallpaper(id: number): Promise<void> {
+    return this.request<void>(`/wallpapers/${id}`, { method: 'DELETE' });
+  }
+
+  async likeWallpaper(
+    id: number,
+    increment: boolean
+  ): Promise<Wallpaper> {
+    return this.request<Wallpaper>(`/wallpapers/${id}/like`, {
+      method: 'POST',
+      body: JSON.stringify({ increment }),
+    });
+  }
+
+  async downloadWallpaper(id: number): Promise<{ url: string }> {
+    return this.request<{ url: string }>(`/wallpapers/${id}/download`, {
+      method: 'POST',
     });
   }
 
@@ -202,7 +256,7 @@ class ApiService {
   }
 
   // Delete file
-  deleteFile(filename: string): Promise<void> {
+  async deleteFile(filename: string): Promise<void> {
     return this.request<void>(`/files/${filename}`, { method: 'DELETE' });
   }
 }
