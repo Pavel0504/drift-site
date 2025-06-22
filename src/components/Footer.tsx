@@ -2,15 +2,21 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Camera, Instagram, Send, MessageCircle } from "lucide-react";
 import { useData } from "../context/DataContext";
+import { useNavigate } from "react-router-dom";
 
 function Footer() {
   const { settings } = useData();
+  const navigate = useNavigate();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
 
   // Общие стили для фонового hover-слоя
@@ -22,9 +28,10 @@ function Footer() {
   };
 
   const menuItems = [
-    { name: "Альбомы", id: "albums" },
-    { name: "События", id: "events" },
-    { name: "Отзывы", id: "reviews" },
+    { name: "Альбомы", id: "albums", type: "scroll" },
+    { name: "События", id: "events", type: "scroll" },
+    { name: "Отзывы", id: "reviews", type: "scroll" },
+    { name: "Обои", path: "/wallpapers", type: "navigate" },
   ];
 
   return (
@@ -61,7 +68,11 @@ function Footer() {
               {menuItems.map((item) => (
                 <motion.button
                   key={item.name}
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => 
+                    item.type === "scroll" 
+                      ? scrollToSection(item.id!) 
+                      : handleNavigation(item.path!)
+                  }
                   className="block mx-auto relative group overflow-visible font-bold uppercase tracking-wider text-white"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

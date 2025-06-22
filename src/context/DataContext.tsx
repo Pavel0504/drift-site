@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { Settings, Statistics, Album, Stage, Event, Review, Photo } from '../types';
+import type { Settings, Statistics, Album, Stage, Event, Review, Photo, Wallpaper } from '../types';
 import apiService from '../services/api';
 
 interface DataContextType {
@@ -9,12 +9,14 @@ interface DataContextType {
   albums: Album[];
   events: Event[];
   reviews: Review[];
+  wallpapers: Wallpaper[];
   loading: boolean;
   updateSettings: (newSettings: Settings) => Promise<void>;
   updateStatistics: (newStats: Statistics) => Promise<void>;
   updateAlbums: (newAlbums: Album[]) => Promise<void>;
   updateEvents: (newEvents: Event[]) => Promise<void>;
   updateReviews: (newReviews: Review[]) => Promise<void>;
+  updateWallpapers: (newWallpapers: Wallpaper[]) => Promise<void>;
   createAlbum: (albumData: CreateAlbumData) => Promise<boolean>;
   deleteAlbum: (albumId: string) => Promise<boolean>;
   updateAlbum: (albumId: string, albumData: UpdateAlbumData) => Promise<boolean>;
@@ -83,18 +85,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     try {
       setLoading(true);
      
-      const [settingsData, statisticsData, albumsData, eventsData, reviewsData] = await Promise.all([
+      const [settingsData, statisticsData, albumsData, eventsData, reviewsData, wallpapersData] = await Promise.all([
         apiService.getSettings().catch(() => ({})),
         apiService.getStatistics().catch(() => ({})),
         apiService.getAlbums().catch(() => ({ albums: [] })),
         apiService.getEvents().catch(() => ({ events: [] })),
-        apiService.getReviews().catch(() => ({ reviews: [] }))
+        apiService.getReviews().catch(() => ({ reviews: [] })),
+        apiService.getWallpapers().catch(() => ({ wallpapers: [] }))
       ]);
 
       if (settingsData && Object.keys(settingsData).length > 0) {
@@ -125,6 +129,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (reviewsData?.reviews) {
         setReviews(reviewsData.reviews as Review[]);
+      }
+
+      if (wallpapersData?.wallpapers) {
+        setWallpapers(wallpapersData.wallpapers as Wallpaper[]);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -188,6 +196,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateWallpapers = async (newWallpapers: Wallpaper[]) => {
+    try {
+      setWallpapers(newWallpapers);
+    } catch (error) {
+      console.error('Error updating wallpapers:', error);
+      throw error;
+    }
+  };
+
   const createAlbum = async (albumData: CreateAlbumData): Promise<boolean> => {
     try {
       const result = await apiService.createAlbum(albumData);
@@ -237,12 +254,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
       albums,
       events,
       reviews,
+      wallpapers,
       loading,
       updateSettings,
       updateStatistics,
       updateAlbums,
       updateEvents,
       updateReviews,
+      updateWallpapers,
       createAlbum,
       deleteAlbum,
       updateAlbum,

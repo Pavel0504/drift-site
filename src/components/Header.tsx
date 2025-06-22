@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Menu, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,10 +24,16 @@ function Header() {
     setIsMobileMenuOpen(false);
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
+  };
+
   const navItems = [
-    { name: "Альбомы", id: "albums" },
-    { name: "События", id: "events" },
-    { name: "Отзывы", id: "reviews" },
+    { name: "Альбомы", id: "albums", type: "scroll" },
+    { name: "События", id: "events", type: "scroll" },
+    { name: "Отзывы", id: "reviews", type: "scroll" },
+    { name: "Обои", path: "/wallpapers", type: "navigate" },
   ];
 
   return (
@@ -46,7 +54,10 @@ function Header() {
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
           {/* Логотип и название */}
-          <div className="flex items-center space-x-2">
+          <div 
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => handleNavigation('/')}
+          >
             <img
               src="/logo.png"
               alt="AutoFrame Logo"
@@ -62,7 +73,11 @@ function Header() {
             {navItems.map((item) => (
               <motion.button
                 key={item.name}
-                onClick={() => scrollToSection(item.id)}
+                onClick={() => 
+                  item.type === "scroll" 
+                    ? scrollToSection(item.id!) 
+                    : handleNavigation(item.path!)
+                }
                 className="relative text-white font-bold px-6 py-3 transition-all duration-300 group uppercase tracking-wider overflow-visible"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -114,7 +129,11 @@ function Header() {
                 {navItems.map((item, index) => (
                   <motion.button
                     key={item.name}
-                    onClick={() => scrollToSection(item.id)}
+                    onClick={() => 
+                      item.type === "scroll" 
+                        ? scrollToSection(item.id!) 
+                        : handleNavigation(item.path!)
+                    }
                     className="relative text-white font-bold py-3 px-4 text-left transition-all duration-300 uppercase tracking-wider group overflow-visible"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}

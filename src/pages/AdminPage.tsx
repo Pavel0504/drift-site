@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, FolderOpen, Calendar, Settings, LogOut } from 'lucide-react';
+import { BarChart3, FolderOpen, Calendar, Settings, LogOut, Image } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatisticsTab from '../components/admin/StatisticsTab';
 import AlbumsTab from '../components/admin/AlbumsTab';
 import EventsTab from '../components/admin/EventsTab';
 import SettingsTab from '../components/admin/SettingsTab';
+import WallpapersTab from '../components/admin/WallpapersTab';
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState('statistics');
@@ -15,6 +16,7 @@ function AdminPage() {
     { id: 'statistics', name: 'Статистика', icon: BarChart3 },
     { id: 'albums', name: 'Альбомы', icon: FolderOpen },
     { id: 'events', name: 'События', icon: Calendar },
+    { id: 'wallpapers', name: 'Обои', icon: Image },
     { id: 'settings', name: 'Настройки', icon: Settings }
   ];
 
@@ -30,6 +32,8 @@ function AdminPage() {
         return <AlbumsTab />;
       case 'events':
         return <EventsTab />;
+      case 'wallpapers':
+        return <WallpapersTab />;
       case 'settings':
         return <SettingsTab />;
       default:

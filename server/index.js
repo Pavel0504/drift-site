@@ -41,7 +41,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 50 * 1024 * 1024 // 50MB limit
@@ -74,10 +74,10 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    
+   
     const fileUrl = `/images/${req.file.filename}`;
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       url: fileUrl,
       filename: req.file.filename,
       originalName: req.file.originalname,
@@ -95,16 +95,16 @@ app.post('/api/upload/multiple', upload.array('files', 20), async (req, res) => 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
     }
-    
+   
     const uploadedFiles = req.files.map(file => ({
       url: `/images/${file.filename}`,
       filename: file.filename,
       originalName: file.originalname,
       size: file.size
     }));
-    
-    res.json({ 
-      success: true, 
+   
+    res.json({
+      success: true,
       files: uploadedFiles
     });
   } catch (error) {
@@ -118,15 +118,63 @@ app.get('/api/download/image/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(IMAGES_DIR, filename);
-    
+   
     if (!(await fs.pathExists(filePath))) {
       return res.status(404).json({ error: 'File not found' });
     }
-    
+   
     res.download(filePath);
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ error: 'Failed to download file' });
+  }
+});
+
+// Download wallpaper
+app.get('/api/download/wallpaper/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(IMAGES_DIR, filename);
+   
+    if (!(await fs.pathExists(filePath))) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+   
+    res.download(filePath);
+  } catch (error) {
+    console.error('Download wallpaper error:', error);
+    res.status(500).json({ error: 'Failed to download wallpaper' });
+  }
+});
+
+// Download all wallpapers as ZIP
+app.get('/api/download/wallpapers/all', async (req, res) => {
+  try {
+    const wallpapersData = await readJSONFile(path.join(DATA_DIR, 'wallpapers.json'));
+   
+    if (!wallpapersData || !wallpapersData.wallpapers) {
+      return res.status(404).json({ error: 'No wallpapers found' });
+    }
+   
+    const archive = archiver('zip', {
+      zlib: { level: 9 }
+    });
+   
+    res.attachment('wallpapers.zip');
+    archive.pipe(res);
+   
+    // Add all wallpapers to archive
+    for (const wallpaper of wallpapersData.wallpapers) {
+      const wallpaperPath = path.join(IMAGES_DIR, path.basename(wallpaper.url));
+      if (await fs.pathExists(wallpaperPath)) {
+        archive.file(wallpaperPath, { name: path.basename(wallpaper.url) });
+      }
+    }
+   
+    await archive.finalize();
+  } catch (error) {
+    console.error('Wallpapers download error:', error);
+    res.status(500).json({ error: 'Failed to download wallpapers' });
   }
 });
 
@@ -135,18 +183,18 @@ app.get('/api/download/album/:albumId', async (req, res) => {
   try {
     const albumId = req.params.albumId;
     const albumDetails = await readJSONFile(path.join(ALBUMS_DIR, `${albumId}.json`));
-    
+   
     if (!albumDetails) {
       return res.status(404).json({ error: 'Album not found' });
     }
-    
+   
     const archive = archiver('zip', {
       zlib: { level: 9 }
     });
-    
+   
     res.attachment(`${albumDetails.name}.zip`);
     archive.pipe(res);
-    
+   
     // Add all photos from all stages
     if (Array.isArray(albumDetails.stages)) {
       for (const stage of albumDetails.stages) {
@@ -167,7 +215,7 @@ app.get('/api/download/album/:albumId', async (req, res) => {
         }
       }
     }
-    
+   
     await archive.finalize();
   } catch (error) {
     console.error('Album download error:', error);
@@ -180,11 +228,11 @@ app.delete('/api/files/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(IMAGES_DIR, filename);
-    
+   
     if (await fs.pathExists(filePath)) {
       await fs.remove(filePath);
     }
-    
+   
     res.json({ success: true });
   } catch (error) {
     console.error('Delete file error:', error);
@@ -218,7 +266,7 @@ app.post('/api/albums', async (req, res) => {
   try {
     const albumData = req.body;
     const albumId = `album-${Date.now()}`;
-    
+   
     // Create album summary
     const albumsData = await readJSONFile(path.join(DATA_DIR, 'albums.json')) || { albums: [] };
     const newAlbumSummary = {
@@ -231,10 +279,10 @@ app.post('/api/albums', async (req, res) => {
       likes: albumData.likes || 0,
       downloads: albumData.downloads || 0
     };
-    
+   
     albumsData.albums.push(newAlbumSummary);
     await writeJSONFile(path.join(DATA_DIR, 'albums.json'), albumsData);
-    
+   
     // Create album detail file
     const albumDetail = {
       ...newAlbumSummary,
@@ -242,7 +290,7 @@ app.post('/api/albums', async (req, res) => {
       photos: albumData.photos || []
     };
     await writeJSONFile(path.join(ALBUMS_DIR, `${albumId}.json`), albumDetail);
-    
+   
     res.json({ success: true, id: albumId });
   } catch (error) {
     console.error(error);
@@ -250,11 +298,10 @@ app.post('/api/albums', async (req, res) => {
   }
 });
 
-// В server/index.js, внутри app.put('/api/albums/:id', ...)
 app.put('/api/albums/:id', async (req, res) => {
   try {
     const albumId = req.params.id;
-    const albumData = req.body; // может содержать name, date, previewImage, coverMedia, mediaType, stages, photos и т.п.
+    const albumData = req.body;
 
     // Читаем общий файл
     const albumsData = await readJSONFile(path.join(DATA_DIR, 'albums.json')) || { albums: [] };
@@ -330,7 +377,7 @@ app.put('/api/albums/:id', async (req, res) => {
 app.delete('/api/albums/:id', async (req, res) => {
   try {
     const albumId = req.params.id;
-    
+   
     // Delete associated images
     const albumDetails = await readJSONFile(path.join(ALBUMS_DIR, `${albumId}.json`));
     if (albumDetails) {
@@ -353,18 +400,18 @@ app.delete('/api/albums/:id', async (req, res) => {
         }
       }
     }
-    
+   
     // Remove from summary
     const albumsData = await readJSONFile(path.join(DATA_DIR, 'albums.json')) || { albums: [] };
     albumsData.albums = albumsData.albums.filter(a => a.id !== albumId);
     await writeJSONFile(path.join(DATA_DIR, 'albums.json'), albumsData);
-    
+   
     // Remove detail file
     const albumFile = path.join(ALBUMS_DIR, `${albumId}.json`);
     if (await fs.pathExists(albumFile)) {
       await fs.remove(albumFile);
     }
-    
+   
     res.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -386,16 +433,16 @@ app.post('/api/events', async (req, res) => {
   try {
     const eventData = req.body;
     const eventsData = await readJSONFile(path.join(DATA_DIR, 'events.json')) || { events: [] };
-    
+   
     const newEvent = {
       id: `event-${Date.now()}`,
       ...eventData,
       isCompleted: false
     };
-    
+   
     eventsData.events.push(newEvent);
     await writeJSONFile(path.join(DATA_DIR, 'events.json'), eventsData);
-    
+   
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create event' });
@@ -406,17 +453,17 @@ app.put('/api/events/:id', async (req, res) => {
   try {
     const eventId = req.params.id;
     const eventData = req.body;
-    
+   
     const eventsData = await readJSONFile(path.join(DATA_DIR, 'events.json')) || { events: [] };
     const eventIndex = eventsData.events.findIndex(event => event.id === eventId);
-    
+   
     if (eventIndex === -1) {
       return res.status(404).json({ error: 'Event not found' });
     }
-    
+   
     eventsData.events[eventIndex] = { ...eventsData.events[eventIndex], ...eventData };
     await writeJSONFile(path.join(DATA_DIR, 'events.json'), eventsData);
-    
+   
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update event' });
@@ -426,11 +473,11 @@ app.put('/api/events/:id', async (req, res) => {
 app.delete('/api/events/:id', async (req, res) => {
   try {
     const eventId = req.params.id;
-    
+   
     const eventsData = await readJSONFile(path.join(DATA_DIR, 'events.json')) || { events: [] };
     eventsData.events = eventsData.events.filter(event => event.id !== eventId);
     await writeJSONFile(path.join(DATA_DIR, 'events.json'), eventsData);
-    
+   
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete event' });
@@ -451,16 +498,16 @@ app.post('/api/reviews', async (req, res) => {
   try {
     const reviewData = req.body;
     const reviewsData = await readJSONFile(path.join(DATA_DIR, 'reviews.json')) || { reviews: [] };
-    
+   
     const newReview = {
       id: `review-${Date.now()}`,
       ...reviewData,
       date: new Date().toISOString().split('T')[0]
     };
-    
+   
     reviewsData.reviews.push(newReview);
     await writeJSONFile(path.join(DATA_DIR, 'reviews.json'), reviewsData);
-    
+   
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create review' });
@@ -507,6 +554,115 @@ app.put('/api/statistics', async (req, res) => {
   }
 });
 
+// Wallpapers endpoints
+app.get('/api/wallpapers', async (req, res) => {
+  try {
+    const wallpapersData = await readJSONFile(path.join(DATA_DIR, 'wallpapers.json'));
+    res.json(wallpapersData || { wallpapers: [] });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch wallpapers' });
+  }
+});
+
+app.post('/api/wallpapers', async (req, res) => {
+  try {
+    const { wallpapers } = req.body;
+    const wallpapersData = await readJSONFile(path.join(DATA_DIR, 'wallpapers.json')) || { wallpapers: [] };
+   
+    const newWallpapers = wallpapers.map(wallpaper => ({
+      id: `wallpaper-${Date.now()}-${Math.random()}`,
+      name: wallpaper.name,
+      url: wallpaper.url,
+      likes: 0,
+      downloads: 0,
+      createdAt: new Date().toISOString()
+    }));
+   
+    wallpapersData.wallpapers.push(...newWallpapers);
+    await writeJSONFile(path.join(DATA_DIR, 'wallpapers.json'), wallpapersData);
+   
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to create wallpapers:', error);
+    res.status(500).json({ error: 'Failed to create wallpapers' });
+  }
+});
+
+app.post('/api/wallpapers/:id/like', async (req, res) => {
+  try {
+    const wallpaperId = req.params.id;
+    const { increment } = req.body;
+    
+    const wallpapersData = await readJSONFile(path.join(DATA_DIR, 'wallpapers.json')) || { wallpapers: [] };
+    const wallpaperIndex = wallpapersData.wallpapers.findIndex(w => w.id === wallpaperId);
+    
+    if (wallpaperIndex === -1) {
+      return res.status(404).json({ error: 'Wallpaper not found' });
+    }
+    
+    if (increment) {
+      wallpapersData.wallpapers[wallpaperIndex].likes += 1;
+    } else {
+      wallpapersData.wallpapers[wallpaperIndex].likes = Math.max(wallpapersData.wallpapers[wallpaperIndex].likes - 1, 0);
+    }
+    
+    await writeJSONFile(path.join(DATA_DIR, 'wallpapers.json'), wallpapersData);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to update wallpaper likes:', error);
+    res.status(500).json({ error: 'Failed to update likes' });
+  }
+});
+
+app.post('/api/wallpapers/:id/download', async (req, res) => {
+  try {
+    const wallpaperId = req.params.id;
+    
+    const wallpapersData = await readJSONFile(path.join(DATA_DIR, 'wallpapers.json')) || { wallpapers: [] };
+    const wallpaperIndex = wallpapersData.wallpapers.findIndex(w => w.id === wallpaperId);
+    
+    if (wallpaperIndex === -1) {
+      return res.status(404).json({ error: 'Wallpaper not found' });
+    }
+    
+    wallpapersData.wallpapers[wallpaperIndex].downloads += 1;
+    
+    await writeJSONFile(path.join(DATA_DIR, 'wallpapers.json'), wallpapersData);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to update wallpaper downloads:', error);
+    res.status(500).json({ error: 'Failed to update downloads' });
+  }
+});
+
+app.delete('/api/wallpapers/:id', async (req, res) => {
+  try {
+    const wallpaperId = req.params.id;
+    
+    const wallpapersData = await readJSONFile(path.join(DATA_DIR, 'wallpapers.json')) || { wallpapers: [] };
+    const wallpaper = wallpapersData.wallpapers.find(w => w.id === wallpaperId);
+    
+    if (!wallpaper) {
+      return res.status(404).json({ error: 'Wallpaper not found' });
+    }
+    
+    // Delete the image file
+    const imagePath = path.join(IMAGES_DIR, path.basename(wallpaper.url));
+    if (await fs.pathExists(imagePath)) {
+      await fs.remove(imagePath);
+    }
+    
+    // Remove from wallpapers array
+    wallpapersData.wallpapers = wallpapersData.wallpapers.filter(w => w.id !== wallpaperId);
+    await writeJSONFile(path.join(DATA_DIR, 'wallpapers.json'), wallpapersData);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete wallpaper:', error);
+    res.status(500).json({ error: 'Failed to delete wallpaper' });
+  }
+});
+
 // Стриминг видео по пути /video
 app.get('/video', (req, res) => {
   const videoPath = path.join(__dirname, 'task.mp4');
@@ -544,7 +700,6 @@ app.get('/video', (req, res) => {
     }
   });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

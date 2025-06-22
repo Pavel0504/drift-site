@@ -61,3 +61,12 @@ export interface Review {
   text: string;
   date: string;
 }
+
+export interface Wallpaper {
+  id: string;
+  url: string;
+  name: string;
+  likes: number;
+  downloads: number;
+  createdAt: string;
+}
