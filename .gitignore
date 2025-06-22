@@ -25,3 +25,13 @@ dist-ssr
 .env
 .env.production
 /server/task.mp4
+src/data/albums.json
+src/data/albums.json
+src/data/albums.json
+src/data/events.json
+src/data/reviews.json
+src/data/settings.json
+src/data/statistics.json
+src/data/albums/album-1750273359411.json
+src/data/albums/album-1750586299389.json
+src/data/albums/album-1750590462060.json
